@@ -54,6 +54,10 @@ public:
             glBindTexture(GL_TEXTURE_2D, normal->ID);
         }
     }
+
+	void Draw() {
+		mesh.Draw();
+	}
     
 private:
     /*  Functions   */

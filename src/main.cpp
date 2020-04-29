@@ -123,12 +123,12 @@ int main()
 	barrelModel.normal = new Texture("../resources/barrel/barrel_n.png");
 
     Model fireExtModel = Model("../resources/FireExt/FireExt.obj");
-	fireExtModel.diffuse = new Texture("../resources/FireExt/FireExt_d.png");
-	fireExtModel.specular = new Texture("../resources/FireExt/FireExt_s.png");
-	fireExtModel.normal = new Texture("../resources/FireExt/FireExt_n.png");
+	fireExtModel.diffuse = new Texture("../resources/FireExt/FireExt_d.jpg");
+	fireExtModel.specular = new Texture("../resources/FireExt/FireExt_s.jpg");
+	fireExtModel.normal = new Texture("../resources/FireExt/FireExt_n.jpg");
 
-    Model yourOwnModel;
-
+    Model finnModel = Model("../resources/finn/Finn.obj");
+	finnModel.diffuse = new Texture("resources/finn/Finn.png");
 
     // Add entities to scene.
     // you can change the position/orientation.
@@ -147,6 +147,7 @@ int main()
     scene.addEntity(new Entity(&boulderModel, glm::vec3(-5, 0, 2), 0.0f, 180.0f, 0.0f, 0.1));
 
     // add your model's entity here!
+	scene.addEntity(new Entity(&finnModel, glm::mat4(1.0f)));
 
 
 
@@ -197,6 +198,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
         
         // TODO : 
         // (1) render shadow map!
@@ -206,14 +209,20 @@ int main()
             // framebuffer : default frame buffer(0)
             // shader : shader_lighting.fs/vs
         // Iterate using map<Model*, vector<Entity*>>::iterator it = scene.entities.begin()
+		lightingShader.use();
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", view);
+
 		map<Model*, vector<Entity*>>::iterator it;
 		for (it = scene.entities.begin(); it != scene.entities.end(); it++) {
-
+			for (vector<Entity*>::iterator entity = it->second.begin(); entity != it->second.end(); entity++) {
+				glm::mat4 model = glm::mat4(1.0f);
+				model = (*entity)->getModelMatrix();
+				lightingShader.setMat4("world", model);
+				(*entity)->model->bind();
+				(*entity)->model->Draw();
+			}
 		}
-
-
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
         
         // use skybox Shader
         skyboxShader.use();
